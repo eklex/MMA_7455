@@ -64,35 +64,39 @@
 
 MMA_7455 accel = MMA_7455();    // Make MMA7455 object
 
-char xVal, yVal, zVal;          // Return value variables
+int16_t xavg, yavg, zavg;
+int16_t x10, y10, z10;
 
 void setup() {
-  Serial.begin(115200);           // Use the Serial Monitor window at 9600 baud
+  Serial.begin(9600);           // Use the Serial Monitor window at 9600 baud
   
   // Set the g force sensitivity: 2=2g, 4=4g, 8-8g
-  accel.initSensitivity(2);
+  accel.setSensitivity(2);
+  
+  accel.setMode(mesure);
   
  // Provide oiffset values so that sensor displays 0, 0, 63
  //  (or close to it) when positioned on a flat surface, all pins
  //  facing down
  
  // Update the numbers with your own values from the MMA7455_CalibrateOffset sketch.
-  accel.calibrateOffset(0, 0, 0);
+  accel.setAxisOffset(0, 40, -25);
 }
 
 void loop() {
  
   // Get the X, Y, anx Z axis values from the device
-  xVal = accel.readAxis('x');   // Read X Axis
-  yVal = accel.readAxis('y');   // Read Y Axis
-  zVal = accel.readAxis('z');   // Read Z Axis
+  x10 = accel.readAxis10('x');   // Read 10-bit X Axis
+  y10 = accel.readAxis10('y');   // Read 10-bit Y Axis
+  z10 = accel.readAxis10('z');   // Read 10-bit Z Axis
+  
+  xavg = xavg*0.5 + x10*0.5;
+  yavg = yavg*0.5 + y10*0.5; 
+  zavg = zavg*0.5 + z10*0.5;
   
   // Display them in the Serial Monitor window.
-  Serial.print("X: = ");
-  Serial.print(xVal, DEC);
-  Serial.print("   Y: = ");
-  Serial.print(yVal, DEC);
-  Serial.print("   Z: = ");
-  Serial.println(zVal, DEC);
+  Serial.print("X: ");   Serial.print(xavg, DEC);
+  Serial.print("\tY: "); Serial.print(yavg, DEC);
+  Serial.print("\tZ: "); Serial.println(zavg, DEC);
   delay(1000);
 }
