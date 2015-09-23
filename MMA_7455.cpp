@@ -6,49 +6,8 @@
 
 #include "MMA_7455.h"
 
-#define MMA_7455_ADDRESS 0x1D //I2C Adsress for the sensor
-
-#define MODE_CTRL_OFF       (0x16)
-#define MODE_CTRL_MODE_MASK (0x03 << 0)
-#define MODE_CTRL_MODE_STBY (0x00 << 0)
-#define MODE_CTRL_MODE_MSMT (0x01 << 0)
-#define MODE_CTRL_MODE_LVL  (0x02 << 0)
-#define MODE_CTRL_MODE_PLS  (0x03 << 0)
-#define MODE_CTRL_GLVL_MASK (0x03 << 2)
-#define MODE_CTRL_GLVL_2G   (0x01 << 2) //Set Sensitivity to 2g
-#define MODE_CTRL_GLVL_4G   (0x02 << 2) //Set Sensitivity to 4g
-#define MODE_CTRL_GLVL_8G   (0x00 << 2) //Set Sensitivity to 8g
-#define MODE_CTRL_STON_EN   (0x01 << 4)
-
-#define CTRL_1_OFF          (0x18)
-#define CTRL_1_XDA_DIS      (0x01 << 3)
-#define CTRL_1_YDA_DIS      (0x01 << 4)
-#define CTRL_1_ZDA_DIS      (0x01 << 5)
-#define CTRL_1_THOPT        (0x01 << 6)
-
-#define CTRL_2_OFF          (0x19)
-#define CTRL_2_LDPL         (0x01 << 0)
-#define CTRL_2_PDPL         (0x01 << 1)
-
-#define LVL_THRD_LIM_OFF    (0x1A)
-#define LVL_THRD_LIM_MASK   (0xFF)
-#define LVL_THRD_LIM_SIGN   (0x01 << 7)
-
-#define PLS_THRD_LIM_OFF    (0x1B)
-#define PLS_THRD_LIM_MASK   (0xFF)
-
-#define PLS_DURATION_OFF    (0x1C)
-#define PLS_DURATION_MASK   (0xFF)
-
-#define LATENCY_TIME_OFF    (0x1D)
-#define PLS2_DURATION_OFF   (0x1E)
-
-#define X_OUT 0x06 //Register for reading the X-Axis
-#define Y_OUT 0x07 //Register for reading the Y-Axis
-#define Z_OUT 0x08 //Register for reading the Z-Axis
-
 MMA_7455::MMA_7455()
-{ 
+{
   Wire.begin();
 }
 
@@ -59,22 +18,22 @@ void MMA_7455::setSensitivity(int sensitivity)
   switch(sensitivity)
   {
     case 2:
-      selected = MODE_CTRL_GLVL_2G;
+      selected = MCTL_GLVL_2G;
       break;
     case 4:
-      selected = MODE_CTRL_GLVL_4G;
+      selected = MCTL_GLVL_4G;
       break;
     case 8:
-      selected = MODE_CTRL_GLVL_8G;
+      selected = MCTL_GLVL_8G;
       break;
     default:
-      selected = MODE_CTRL_GLVL_2G;
+      selected = MCTL_GLVL_2G;
       break;
   }
-  val = readReg(MODE_CTRL_OFF);
-  val &= ~MODE_CTRL_GLVL_MASK;
-  val |= selected & MODE_CTRL_GLVL_MASK;
-  writeReg(MODE_CTRL_OFF, val);
+  val = readReg(MCTL_OFF);
+  val &= ~MCTL_GLVL_MASK;
+  val |= selected & MCTL_GLVL_MASK;
+  writeReg(MCTL_OFF, val);
   return;
 }
 
@@ -83,17 +42,17 @@ int MMA_7455::getSensitivity(void)
   int     selected = 0;
   uint8_t val      = 0;
   
-  val = readReg(MODE_CTRL_OFF);
-  val &= MODE_CTRL_GLVL_MASK;
+  val = readReg(MCTL_OFF);
+  val &= MCTL_GLVL_MASK;
   switch(val)
   {
-    case MODE_CTRL_GLVL_2G:
+    case MCTL_GLVL_2G:
       selected = 2;
       break;
-    case MODE_CTRL_GLVL_4G:
+    case MCTL_GLVL_4G:
       selected = 4;
       break;
-    case MODE_CTRL_GLVL_8G:
+    case MCTL_GLVL_8G:
       selected = 8;
       break;
     default:
@@ -109,48 +68,48 @@ void MMA_7455::setMode(MODE mode)
   uint8_t val      = 0;
   switch(mode)
   {
-    case standy:
-      selected = MODE_CTRL_MODE_STBY;
+    case standby:
+      selected = MCTL_MOD_STBY;
       break;
     case mesure:
-      selected = MODE_CTRL_MODE_MSMT;
+      selected = MCTL_MOD_MSMT;
       break;
     case level:
-      selected = MODE_CTRL_MODE_LVL;
+      selected = MCTL_MOD_LVL;
       break;
     case pulse:
-      selected = MODE_CTRL_MODE_PLS;
+      selected = MCTL_MOD_PLS;
       break;
     default:
-      selected = MODE_CTRL_MODE_MSMT;
+      selected = MCTL_MOD_MSMT;
       break;
   }
-  val = readReg(MODE_CTRL_OFF);
-  val &= ~MODE_CTRL_MODE_MASK;
-  val |= selected & MODE_CTRL_MODE_MASK;
-  writeReg(MODE_CTRL_OFF, val);
+  val = readReg(MCTL_OFF);
+  val &= ~MCTL_MOD_MASK;
+  val |= selected & MCTL_MOD_MASK;
+  writeReg(MCTL_OFF, val);
   return;
 }
 
 MODE MMA_7455::getMode(void)
 {
-  MODE    selected = 0;
+  MODE    selected = none;
   uint8_t val      = 0;
   
-  val = readReg(MODE_CTRL_OFF);
-  val &= MODE_CTRL_MODE_MASK;
-  switch(mode)
+  val = readReg(MCTL_OFF);
+  val &= MCTL_MOD_MASK;
+  switch(val)
   {
-    case MODE_CTRL_MODE_STBY:
-      selected = standy;
+    case MCTL_MOD_STBY:
+      selected = standby;
       break;
-    case MODE_CTRL_MODE_MSMT:
+    case MCTL_MOD_MSMT:
       selected = mesure;
       break;
-    case MODE_CTRL_MODE_LVL:
+    case MCTL_MOD_LVL:
       selected = level;
       break;
-    case MODE_CTRL_MODE_PLS:
+    case MCTL_MOD_PLS:
       selected = pulse;
       break;
     default:
@@ -163,129 +122,129 @@ MODE MMA_7455::getMode(void)
 void MMA_7455::setSelfTest(bool enable)
 {
   uint8_t val      = 0;
-  val = readReg(MODE_CTRL_OFF);
+  val = readReg(MCTL_OFF);
   if(enable)
   {
-    val |= MODE_CTRL_STON_EN;
+    val |= MCTL_STON;
   }
   else
   {
-    val &= ~MODE_CTRL_STON_EN;
+    val &= ~MCTL_STON;
   }
-  writeReg(MODE_CTRL_OFF, val);
+  writeReg(MCTL_OFF, val);
   return;
 }
 
 void MMA_7455::enableDetectionXYZ(bool x, bool y, bool z)
 {
   uint8_t val      = 0;
-  val = readReg(CTRL_1_OFF);
+  val = readReg(CTL1_OFF);
   
   /* enable/disbale detection on X */
-  if(x) val &= ~CTRL_1_XDA_DIS;
-  else  val |= CTRL_1_XDA_DIS;
+  if(x) val &= ~CTL1_XDA_DIS;
+  else  val |= CTL1_XDA_DIS;
   /* enable/disbale detection on Y */
-  if(y) val &= ~CTRL_1_YDA_DIS;
-  else  val |= CTRL_1_YDA_DIS;
+  if(y) val &= ~CTL1_YDA_DIS;
+  else  val |= CTL1_YDA_DIS;
   /* enable/disbale detection on Z */
-  if(z) val &= ~CTRL_1_ZDA_DIS;
-  else  val |= CTRL_1_ZDA_DIS;
+  if(z) val &= ~CTL1_ZDA_DIS;
+  else  val |= CTL1_ZDA_DIS;
   
-  writeReg(CTRL_1_OFF, val);
+  writeReg(CTL1_OFF, val);
   return;
 }
 
 void MMA_7455::setLevelPolarity(LEVEL_MODE mode)
 {
   uint8_t val      = 0;
-  val = readReg(CTRL_2_OFF);
+  val = readReg(CTL2_OFF);
   switch(mode)
   {
-    case positive:
-      val &= ~CTRL_2_LDPL;
+    case lvl_positive:
+      val &= ~CTL2_LDPL;
       break;
-    case freefall:
-      val |= CTRL_2_LDPL;
+    case lvl_freefall:
+      val |= CTL2_LDPL;
       break;
     default:
-      val &= ~CTRL_2_LDPL;
+      val &= ~CTL2_LDPL;
       break;
   }
-  writeReg(CTRL_2_OFF, val);
+  writeReg(CTL2_OFF, val);
   return;
 }
 
 void MMA_7455::setLevelPolarity(unsigned int mode)
 {
   uint8_t val      = 0;
-  val = readReg(CTRL_2_OFF);
+  val = readReg(CTL2_OFF);
   switch(mode)
   {
     case 0:
-      val &= ~CTRL_2_LDPL;
+      val &= ~CTL2_LDPL;
       break;
     case 1:
-      val |= CTRL_2_LDPL;
+      val |= CTL2_LDPL;
       break;
     default:
-      val &= ~CTRL_2_LDPL;
+      val &= ~CTL2_LDPL;
       break;
   }
-  writeReg(CTRL_2_OFF, val);
+  writeReg(CTL2_OFF, val);
   return;
 }
 
 void MMA_7455::setThresholdMode(TH_MODE mode)
 {
   uint8_t val      = 0;
-  val = readReg(CTRL_1_OFF);
+  val = readReg(CTL1_OFF);
   switch(mode)
   {
-    case absoluteTH:
-      val &= ~CTRL_1_THOPT;
+    case th_absolute:
+      val &= ~CTL1_THOPT;
       break;
-    case signedTH:
-      val |= CTRL_1_THOPT;
+    case th_signed:
+      val |= CTL1_THOPT;
       break;
     default:
-      val &= ~CTRL_1_THOPT;
+      val &= ~CTL1_THOPT;
       break;
   }
-  writeReg(CTRL_1_OFF, val);
+  writeReg(CTL1_OFF, val);
   return;
 }
 
 void MMA_7455::setThresholdMode(unsigned int mode)
 {
   uint8_t val      = 0;
-  val = readReg(CTRL_1_OFF);
+  val = readReg(CTL1_OFF);
   switch(mode)
   {
     case 0:
-      val &= ~CTRL_1_THOPT;
+      val &= ~CTL1_THOPT;
       break;
     case 1:
-      val |= CTRL_1_THOPT;
+      val |= CTL1_THOPT;
       break;
     default:
-      val &= ~CTRL_1_THOPT;
+      val &= ~CTL1_THOPT;
       break;
   }
-  writeReg(CTRL_1_OFF, val);
+  writeReg(CTL1_OFF, val);
   return;
 }
 
-void MMA_7455::setThresholdLimit(int8_t limit)
+void MMA_7455::setLevelThresholdLimit(int8_t limit)
 {
-  uint8_t val = readReg(CTRL_1_OFF);
-  if(val & CTRL_1_THOPT)
+  uint8_t val = readReg(CTL1_OFF);
+  if(val & CTL1_THOPT)
   {
     /* signed value of 8-bit */
-    /* range: [-127; +127] */
+    /* range: [-128; +127] */
     val = (uint8_t)limit;
-    val &= LVL_THRD_LIM_MASK;
-    if(( (val & LVL_THRD_LIM_SIGN) && limit < 0) ||
-       (!(val & LVL_THRD_LIM_SIGN) && limit >= 0))
+    val &= LDTH_MASK;
+    if(( (val & LDTH_SIGN) && limit < 0) ||
+       (!(val & LDTH_SIGN) && limit >= 0))
     {
       /* capture valid condition */
     }
@@ -293,65 +252,242 @@ void MMA_7455::setThresholdLimit(int8_t limit)
     {
       /* force bad casting */
       val = (limit >= 0) ?
-            (val & ~LVL_THRD_LIM_SIGN) :
-            (val | LVL_THRD_LIM_SIGN);
+            (val & ~LDTH_SIGN) :
+            (val | LDTH_SIGN);
     }
-    writeReg(LVL_THRD_LIM_OFF, val);
+    writeReg(LDTH_OFF, val);
   }
   else
   {
     /* unsigned value of 7-bit */
     /* range: [0; +127] */
     val = (uint8_t)limit;
-    val &= ~LVL_THRD_LIM_SIGN
-    val &= LVL_THRD_LIM_MASK
-    writeReg(LVL_THRD_LIM_OFF, val);
+    val &= ~LDTH_SIGN;
+    val &= LDTH_MASK;
+    writeReg(LDTH_OFF, val);
   }
   return;
 }
 
-void setPulsePolarity(PULSE_MODE mode)
+void MMA_7455::setPulsePolarity(PULSE_MODE mode)
 {
-  
+  uint8_t val      = 0;
+  val = readReg(CTL2_OFF);
+  switch(mode)
+  {
+    case pls_positive:
+      val &= ~CTL2_PDPL;
+      break;
+    case pls_negative:
+      val |= CTL2_PDPL;
+      break;
+    default:
+      val &= ~CTL2_PDPL;
+      break;
+  }
+  writeReg(CTL2_OFF, val);
+  return;
 }
 
-void MMA_7455::calibrateOffset(float x_axis_offset, float y_axis_offset, float z_axis_offset)
+void MMA_7455::setPulsePolarity(unsigned int mode)
 {
-  _x_axis_offset = x_axis_offset;
-  _y_axis_offset = y_axis_offset;
-  _z_axis_offset = z_axis_offset;
+  uint8_t val      = 0;
+  val = readReg(CTL2_OFF);
+  switch(mode)
+  {
+    case 0:
+      val &= ~CTL2_PDPL;
+      break;
+    case 1:
+      val |= CTL2_PDPL;
+      break;
+    default:
+      val &= ~CTL2_PDPL;
+      break;
+  }
+  writeReg(CTL2_OFF, val);
+  return;
 }
 
-uint8_t MMA_7455::readAxis(char axis)
+void MMA_7455::setPulseThresholdLimit(uint8_t limit)
 {
-  uint8_t reg = 0;
-  
-  if(axis == 'x' || axis == 'X')
-  {
-    reg = X_OUT;
-    _buffer = _x_axis_offset;
-  }
-  else if(axis == 'y' || axis == 'Y')
-  {
-    reg = Y_OUT;
-    _buffer = _y_axis_offset;
-  }
-  else if(axis == 'z' || axis == 'Z')
-  {
-    reg = Z_OUT;
-    _buffer = _z_axis_offset;
-  }
-  else return 0;
-  
-  _buffer += readReg(reg);
-  
-  return _buffer;
+  uint8_t val = limit;
+  val &= PDTH_MASK;
+  writeReg(PDTH_OFF, val);
+  return;
 }
 
+void MMA_7455::setPulseDuration(uint8_t time)
+{
+  uint8_t val = time;
+  val &= PW_MASK;
+  writeReg(PW_OFF, val);
+  return;
+}
 
+void MMA_7455::setPulseLatency(uint8_t time)
+{
+  uint8_t val = time;
+  val &= LT_MASK;
+  writeReg(LT_OFF, val);
+  return;
+}
+
+void MMA_7455::setPulseDuration2(uint8_t time)
+{
+  uint8_t val = time;
+  val &= TW_MASK;
+  writeReg(TW_OFF, val);
+  return;
+}
+
+int8_t MMA_7455::readAxis8(char axis)
+{
+  uint8_t reg   = 0;
+  uint8_t mask  = 0;
+  uint8_t u_val = 0;
+  int8_t  s_val = 0;
+  int     sens  = 0;
+  
+  sens = getSensitivity();
+  switch(axis)
+  {
+    case 'x':
+    case 'X':
+      reg = XOUT8_OFF; mask = XOUT8_MASK;
+      break;
+    case 'y':
+    case 'Y':
+      reg = YOUT8_OFF; mask = YOUT8_MASK;
+      break;
+    case 'z':
+    case 'Z':
+      reg = ZOUT8_OFF; mask = ZOUT8_MASK;
+      break;
+    default:
+      return 0;
+  }
+  
+  u_val = readReg(reg) & mask;
+  s_val += (int8_t)u_val;
+  
+  return s_val;
+}
+
+float MMA_7455::readAxis8g(char axis)
+{
+  float  f_val = 0;
+  int8_t s_val = 0;
+  int    sens  = 0;
+  
+  sens  = getSensitivity();
+  s_val = readAxis8(axis);
+  
+  /* convert N to g/s */
+  f_val = 2.0*(float)sens;
+  f_val /= 256.0;
+  f_val *= (float)s_val;
+  
+  return f_val;
+}
+
+int16_t MMA_7455::readAxis10(char axis)
+{
+  uint8_t  reg[2]  = {0};
+  uint8_t  mask[2] = {0};
+  uint16_t u_val   = 0;
+  int16_t  s_val   = 0;
+  int      sens    = 0;
+  
+  sens = getSensitivity();
+  switch(axis)
+  {
+    case 'x':
+    case 'X':
+      reg[0] = XOUTL_OFF; mask[0] = XOUTL_MASK;
+      reg[1] = XOUTH_OFF; mask[1] = XOUTH_MASK;
+      break;
+    case 'y':
+    case 'Y':
+      reg[0] = YOUTL_OFF; mask[0] = YOUTL_MASK;
+      reg[1] = YOUTH_OFF; mask[1] = YOUTH_MASK;
+      break;
+    case 'z':
+    case 'Z':
+      reg[0] = ZOUTL_OFF; mask[0] = ZOUTL_MASK;
+      reg[1] = ZOUTH_OFF; mask[1] = ZOUTH_MASK;
+      break;
+    default:
+      return 0;
+  }
+  
+  u_val  = readReg(reg[0]) & mask[0];
+  u_val |= (readReg(reg[1]) & mask[1]) << 8;
+  s_val += (int16_t)u_val;
+  
+  /* fill of ones if negative value
+   * to make it valid in 16 bit format */
+  if(s_val & (1 << 9))
+  {
+    s_val |= 0xFC00;
+  }
+  
+  return s_val;
+}
+
+float MMA_7455::readAxis10g(char axis)
+{
+  float   f_val = 0;
+  int16_t s_val = 0;
+  int     sens  = 0;
+  
+  sens  = getSensitivity();
+  s_val = readAxis10(axis);
+  
+  /* convert N to g/s */
+  f_val = 2.0*(float)sens;
+  f_val /= 1024.0;
+  f_val *= (float)s_val;
+  
+  return f_val;
+}
+
+void MMA_7455::setAxisOffset(int16_t x, int16_t y, int16_t z)
+{
+  writeReg(XOFFL_OFF, x & XOFFL_MASK);
+  writeReg(XOFFH_OFF, (x >> 8) & XOFFH_MASK);
+  
+  writeReg(YOFFL_OFF, y & YOFFL_MASK);
+  writeReg(YOFFH_OFF, (y >> 8) & YOFFH_MASK);
+  
+  writeReg(ZOFFL_OFF, z & ZOFFL_MASK);
+  writeReg(ZOFFH_OFF, (z >> 8) & ZOFFH_MASK);
+  
+  return;
+}
+
+void MMA_7455::getAxisOffset(int16_t* x, int16_t* y, int16_t* z)
+{
+  if(x == NULL || y == NULL || z == NULL)   return;
+  
+  *x = readReg(XOFFL_OFF) & XOFFL_MASK;
+  *x |= (readReg(XOFFH_OFF) & XOFFH_MASK) << 8;
+  *x |= (*x & (1 << 10)) ? 0xF800 : 0x0000;
+  
+  *y = readReg(YOFFL_OFF) & YOFFL_MASK;
+  *y |= (readReg(YOFFH_OFF) & YOFFH_MASK) << 8;
+  *y |= (*y & (1 << 10)) ? 0xF800 : 0x0000;
+  
+  *z = readReg(ZOFFL_OFF) & ZOFFL_MASK;
+  *z |= (readReg(ZOFFH_OFF) & ZOFFH_MASK) << 8;
+  *z |= (*z & (1 << 10)) ? 0xF800 : 0x0000;
+  
+  return;
+}
 
 uint8_t MMA_7455::readReg(uint8_t reg)
 {
+  uint8_t buff;
   Wire.beginTransmission(MMA_7455_ADDRESS);
   Wire.write(reg);
   Wire.endTransmission();
@@ -359,10 +495,10 @@ uint8_t MMA_7455::readReg(uint8_t reg)
   Wire.requestFrom(MMA_7455_ADDRESS, 1);
   if(Wire.available())
   {
-    _buffer = Wire.read();
+    buff = Wire.read();
   }
   Wire.endTransmission();
-  return (uint8_t)_buffer;
+  return buff;
 }
 
 void MMA_7455::writeReg(uint8_t reg, uint8_t val)
