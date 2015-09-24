@@ -1,16 +1,52 @@
-// MMA_7455.h - 3 Axis Accelerometer Library
-// Moritz Kemper, IAD Physical Computing Lab
-// moritz.kemper@zhdk.ch
-// ZHdK, 03/04/2012
-// Released under Creative Commons Licence
+/**
+ *   Freescale 3-Axis Accelerometer MMA7455 Library designed for Arduino
+ *   Copyright (C) 2015  Alexandre Boni
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License along
+ *   with this program; if not, write to the Free Software Foundation, Inc.,
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+ 
+/**
+ *  Name:      MMA_7455
+ *  Author:    Alexandre Boni
+ *  Created:   2015/09/16
+ *  Modified:  2015/08/23
+ *  Version:   0.1
+ *  IDE:       Arduino 1.6.5-r2
+ *  License:   GPLv2
+ *
+ *  Release:
+ *    0.1
+ *          Creation of this code from
+ *          Moritz Kemper's MMA7455 library
+ *          released in 03/04/2012 under
+ *          Creative Commons License.
+ *          (moritz.kemper@zhdk.ch)
+ *
+ *
+ *
+ */
 
-#ifndef MMA_7455_h
-#define MMA_7455_h
+
+#ifndef __MMA_7455_H__
+#define __MMA_7455_H__
 
 #include "Arduino.h"
 #include "Wire.h"
 
-#define MMA_7455_ADDRESS 0x1D //I2C Adsress for the sensor
+/* I2C address */
+#define MMA7455_ADDRESS         (0x1D)
 
 /* 10bits Output X LBS */
 #define XOUTL_OFF               (0x00)
@@ -167,55 +203,74 @@
 
 typedef enum _MODE
 {
-    standby = 0,
-    mesure = 1,
-    level = 2,
-    pulse = 3,
-    none
+  standby = 0,
+  mesure = 1,
+  level = 2,
+  pulse = 3,
+  none
 } MODE;
 
 typedef enum _LEVEL_MODE
 {
-    lvl_positive = 0,
-    lvl_freefall = 1
+  lvl_positive = 0,
+  lvl_freefall = 1
 } LEVEL_MODE;
 
 typedef enum _TH_MODE
 {
-    th_absolute = 0,
-    th_signed = 1
+  th_absolute = 0,
+  th_signed = 1
 } TH_MODE;
 
 typedef enum _PULSE_MODE
 {
-    pls_positive = 0,
-    pls_negative = 1
+  pls_positive = 0,
+  pls_negative = 1
 } PULSE_MODE;
+
+typedef enum _ISR_MODE
+{
+  level_pulse = CTL1_INTRG_LVL_PSL,
+  pulse_level = CTL1_INTRG_PSL_LVL,
+  pulse_pulse = CTL1_INTRG_PSL_PSL
+} ISR_MODE;
 
 class MMA_7455
 {
   public:
     MMA_7455();
-    void setSensitivity(int sensitivity);
-    int  getSensitivity(void);
-    void setMode(MODE mode);
-    MODE getMode(void);
-    void setSelfTest(bool enable);
-    void enableDetectionXYZ(bool x, bool y, bool z);
-    void setLevelPolarity(LEVEL_MODE mode);
-    void setLevelPolarity(unsigned int mode);
-    void setThresholdMode(TH_MODE mode);
-    void setThresholdMode(unsigned int mode);
-    void setLevelThresholdLimit(int8_t limit);
-    void setPulsePolarity(unsigned int mode);
-    void setPulsePolarity(PULSE_MODE mode);
-    void setPulseThresholdLimit(uint8_t limit);
-    void setPulseDuration(uint8_t time);
-    void setPulseLatency(uint8_t time);
-    void setPulseDuration2(uint8_t time);
-    void calibrateOffset(float x_axis_offset, float y_axis_offset, float z_axis_offset);
-    void setAxisOffset(int16_t x, int16_t y, int16_t z);
-    void getAxisOffset(int16_t* x, int16_t* y, int16_t* z);
+    
+    void    setSensitivity(int sensitivity);
+    int     getSensitivity(void);
+    
+    void    setMode(MODE mode);
+    MODE    getMode(void);
+    
+    void    setSelfTest(bool enable);
+    
+    void    enableDetectionXYZ(bool x, bool y, bool z);
+    void    setThresholdMode(TH_MODE mode);
+    void    setThresholdMode(unsigned int mode);
+    
+    void    setLevelPolarity(LEVEL_MODE mode);
+    void    setLevelPolarity(unsigned int mode);
+    void    setLevelThresholdLimit(int8_t limit);
+    
+    void    setPulsePolarity(unsigned int mode);
+    void    setPulsePolarity(PULSE_MODE mode);
+    void    setPulseThresholdLimit(uint8_t limit);
+    void    setPulseDuration(uint8_t time);
+    void    setPulseLatency(uint8_t time);
+    void    setPulseDuration2(uint8_t time);
+    
+    void    setAxisOffset(int16_t x, int16_t y, int16_t z);
+    void    getAxisOffset(int16_t* x, int16_t* y, int16_t* z);
+    
+    void    setInterruptMode(ISR_MODE mode);
+    void    getLevelDetection(bool* x, bool* y, bool* z);
+    void    getPulseDetection(bool* x, bool* y, bool* z);
+    void    getInterrupt(bool* int1, bool* int2);
+    void    clearInterrupt(void);
     
     int8_t  readAxis8(char axis);
     float   readAxis8g(char axis);
@@ -225,9 +280,6 @@ class MMA_7455
     uint8_t readReg(uint8_t reg);
     void    writeReg(uint8_t reg, uint8_t val);
     void    writeReg(uint8_t reg);
-
-  private:
-    
 };
 
-#endif
+#endif /* __MMA_7455_H__ */

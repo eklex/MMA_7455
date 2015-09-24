@@ -1,8 +1,42 @@
-// MMA_7455.cpp - 3 Axis Accelerometer Library
-// Moritz Kemper, IAD Physical Computing Lab
-// moritz.kemper@zhdk.ch
-// ZHdK, 03/04/2012
-// Released under Creative Commons Licence
+/**
+ *   Freescale 3-Axis Accelerometer MMA7455 Library designed for Arduino
+ *   Copyright (C) 2015  Alexandre Boni
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License along
+ *   with this program; if not, write to the Free Software Foundation, Inc.,
+ *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+ 
+/**
+ *  Name:      MMA_7455
+ *  Author:    Alexandre Boni
+ *  Created:   2015/09/16
+ *  Modified:  2015/08/23
+ *  Version:   0.1
+ *  IDE:       Arduino 1.6.5-r2
+ *  License:   GPLv2
+ *
+ *  Release:
+ *    0.1
+ *          Creation of this code from
+ *          Moritz Kemper's MMA7455 library
+ *          released in 03/04/2012 under
+ *          Creative Commons License.
+ *          (moritz.kemper@zhdk.ch)
+ *
+ *
+ *
+ */
 
 #include "MMA_7455.h"
 
@@ -485,14 +519,57 @@ void MMA_7455::getAxisOffset(int16_t* x, int16_t* y, int16_t* z)
   return;
 }
 
+void MMA_7455::setInterruptMode(ISR_MODE mode)
+{
+  uint8_t val = readReg(CTL1_OFF);
+  val &= ~CTL1_INTRG_MASK;
+  val |= mode & CTL1_INTRG_MASK;
+  writeReg(CTL1_OFF, val);
+  return;
+}
+
+void MMA_7455::getLevelDetection(bool* x, bool* y, bool* z)
+{
+  uint8_t val = readReg(DETSRC_OFF);
+  if(x) *x = val & DETSRC_LDX ? true : false;
+  if(y) *y = val & DETSRC_LDY ? true : false;
+  if(z) *z = val & DETSRC_LDZ ? true : false;
+  return;
+}
+
+void MMA_7455::getPulseDetection(bool* x, bool* y, bool* z)
+{
+  uint8_t val = readReg(DETSRC_OFF);
+  if(x) *x = val & DETSRC_PDX ? true : false;
+  if(y) *y = val & DETSRC_PDY ? true : false;
+  if(z) *z = val & DETSRC_PDZ ? true : false;
+  return;
+}
+
+void MMA_7455::getInterrupt(bool* int1, bool* int2)
+{
+  uint8_t val = readReg(DETSRC_OFF);
+  if(int1)  *int1 = val & DETSRC_INT1 ? true : false;
+  if(int2)  *int2 = val & DETSRC_INT2 ? true : false;
+  return;
+}
+
+void MMA_7455::clearInterrupt(void)
+{
+  writeReg(INTRST_OFF, INTRST_CLRINT1 | INTRST_CLRINT2);
+  writeReg(INTRST_OFF, 0);
+  return;
+}
+
+
 uint8_t MMA_7455::readReg(uint8_t reg)
 {
   uint8_t buff;
-  Wire.beginTransmission(MMA_7455_ADDRESS);
+  Wire.beginTransmission(MMA7455_ADDRESS);
   Wire.write(reg);
   Wire.endTransmission();
-  Wire.beginTransmission(MMA_7455_ADDRESS);
-  Wire.requestFrom(MMA_7455_ADDRESS, 1);
+  Wire.beginTransmission(MMA7455_ADDRESS);
+  Wire.requestFrom(MMA7455_ADDRESS, 1);
   if(Wire.available())
   {
     buff = Wire.read();
@@ -503,7 +580,7 @@ uint8_t MMA_7455::readReg(uint8_t reg)
 
 void MMA_7455::writeReg(uint8_t reg, uint8_t val)
 {
-  Wire.beginTransmission(MMA_7455_ADDRESS);
+  Wire.beginTransmission(MMA7455_ADDRESS);
   Wire.write(reg);
   Wire.write(val);
   Wire.endTransmission();
@@ -512,7 +589,7 @@ void MMA_7455::writeReg(uint8_t reg, uint8_t val)
 
 void MMA_7455::writeReg(uint8_t reg)
 {
-  Wire.beginTransmission(MMA_7455_ADDRESS);
+  Wire.beginTransmission(MMA7455_ADDRESS);
   Wire.write(reg);
   Wire.endTransmission();
   return;
