@@ -6,15 +6,44 @@
 # Datatypes (KEYWORD1)
 #######################################
 
-MMA_7455	KEYWORD1
+MMA_7455				KEYWORD1
+MODE					KEYWORD1
+LEVEL_MODE				KEYWORD1
+TH_MODE					KEYWORD1
+PULSE_MODE				KEYWORD1
+ISR_MODE				KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-initSensitivity	KEYWORD2
-calibrateOffset	KEYWORD2
-readAxis	KEYWORD2
+setSensitivity			KEYWORD2
+getSensitivity			KEYWORD2
+setMode					KEYWORD2
+getMode					KEYWORD2
+setSelfTest				KEYWORD2
+enableDetectionXYZ		KEYWORD2
+setThresholdMode		KEYWORD2
+setLevelPolarity		KEYWORD2
+setLevelThresholdLimit	KEYWORD2
+setPulsePolarity		KEYWORD2
+setPulseThresholdLimit	KEYWORD2
+setPulseDuration		KEYWORD2
+setPulseLatency			KEYWORD2
+setPulseDuration2		KEYWORD2
+setAxisOffset			KEYWORD2
+getAxisOffset			KEYWORD2
+setInterruptMode		KEYWORD2
+getLevelDetection		KEYWORD2
+getPulseDetection		KEYWORD2
+getInterrupt			KEYWORD2
+clearInterrupt			KEYWORD2
+readAxis8				KEYWORD2
+readAxis8g				KEYWORD2
+readAxis10				KEYWORD2
+readAxis10g				KEYWORD2
+readReg					KEYWORD2
+writeReg				KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
