@@ -16,12 +16,12 @@
  *   with this program; if not, write to the Free Software Foundation, Inc.,
  *   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
- 
+
 /**
  *  Name:      MMA_7455
  *  Author:    Alexandre Boni
  *  Created:   2015/09/16
- *  Modified:  2015/08/23
+ *  Modified:  2015/09/26
  *  Version:   0.1
  *  IDE:       Arduino 1.6.5-r2
  *  License:   GPLv2
@@ -200,7 +200,7 @@
 #define TW_OFF                  (0x1E)
 #define TW_MASK                 (0xFF)
 
-
+/* Accelerometer mode */
 typedef enum _MODE
 {
   standby = 0,
@@ -210,24 +210,28 @@ typedef enum _MODE
   none
 } MODE;
 
+/* Level mode */
 typedef enum _LEVEL_MODE
 {
   lvl_positive = 0,
   lvl_freefall = 1
 } LEVEL_MODE;
 
+/* Threshold mode */
 typedef enum _TH_MODE
 {
   th_absolute = 0,
   th_signed = 1
 } TH_MODE;
 
+/* Pulse mode */
 typedef enum _PULSE_MODE
 {
   pls_positive = 0,
   pls_negative = 1
 } PULSE_MODE;
 
+/* Interrupt mode */
 typedef enum _ISR_MODE
 {
   level_pulse = CTL1_INTRG_LVL_PSL,
@@ -240,6 +244,7 @@ class MMA_7455
   public:
     MMA_7455();
     
+    void    reset(void);
     void    setSensitivity(int sensitivity);
     int     getSensitivity(void);
     
@@ -259,9 +264,9 @@ class MMA_7455
     void    setPulsePolarity(unsigned int mode);
     void    setPulsePolarity(PULSE_MODE mode);
     void    setPulseThresholdLimit(uint8_t limit);
-    void    setPulseDuration(uint8_t time);
-    void    setPulseLatency(uint8_t time);
-    void    setPulseDuration2(uint8_t time);
+    void    setPulseDuration(uint8_t time);  /* 1 = 0.5 ms */
+    void    setPulseLatency(uint8_t time);   /* 1 = 1 ms */
+    void    setPulseDuration2(uint8_t time); /* 1 = 1 ms */
     
     void    setAxisOffset(int16_t x, int16_t y, int16_t z);
     void    getAxisOffset(int16_t* x, int16_t* y, int16_t* z);
@@ -271,11 +276,16 @@ class MMA_7455
     void    getPulseDetection(bool* x, bool* y, bool* z);
     void    getInterrupt(bool* int1, bool* int2);
     void    clearInterrupt(void);
+    void    enableInterruptPins(bool enable);
     
     int8_t  readAxis8(char axis);
+    void    readAxis8(int8_t* x, int8_t* y, int8_t* z);
     float   readAxis8g(char axis);
+    void    readAxis8g(float* x, float* y, float* z);
     int16_t readAxis10(char axis);
+    void    readAxis10(int16_t* x, int16_t* y, int16_t* z);
     float   readAxis10g(char axis);
+    void    readAxis10g(float* x, float* y, float* z);
     
     uint8_t readReg(uint8_t reg);
     void    writeReg(uint8_t reg, uint8_t val);

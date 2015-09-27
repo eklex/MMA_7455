@@ -17,6 +17,7 @@ ISR_MODE				KEYWORD1
 # Methods and Functions (KEYWORD2)
 #######################################
 
+reset					KEYWORD2
 setSensitivity			KEYWORD2
 getSensitivity			KEYWORD2
 setMode					KEYWORD2
@@ -38,6 +39,7 @@ getLevelDetection		KEYWORD2
 getPulseDetection		KEYWORD2
 getInterrupt			KEYWORD2
 clearInterrupt			KEYWORD2
+enableInterruptPins		KEYWORD2
 readAxis8				KEYWORD2
 readAxis8g				KEYWORD2
 readAxis10				KEYWORD2
