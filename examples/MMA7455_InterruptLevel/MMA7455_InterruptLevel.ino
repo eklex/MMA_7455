@@ -1,3 +1,27 @@
+/**
+ *  Name:      MMA7455_InterruptLevel
+ *  Desc.:     Illustrate level mode and interrupt use
+ *  Author:    Alexandre Boni
+ *  Created:   2015/09/16
+ *  Modified:  2015/09/26
+ *  Version:   0.1
+ *  IDE:       Arduino 1.6.5-r2
+ *  License:   GPLv2
+ *
+ *  Release:
+ *    0.1
+ *          Creation of this code
+ *
+ *  Notes:
+ *    When one of the 3 axis goes above 2g,
+ *    the interrupt 1 is triggered.
+ *
+ *    The code expects to have the axis offset
+ *    configured. To get the offset of your
+ *    accelerometer, run MMA7455_AutoCalibration.
+ *
+ */
+
 #include <Wire.h>
 #include <MMA_7455.h>
 
@@ -16,14 +40,16 @@ void setup()
   /* Set accelerometer sensibility */
   /* Note: Level and pulse detections run at 8g */
   accel.setSensitivity(8);
+  /* Verify sensibility - optional */
   if(accel.getSensitivity() != 8)   Serial.println("Sensitivity failure");
-  /* Set main mode */
+  /* Set accelerometer mode */
   accel.setMode(level);
-  if(accel.getMode() != level)     Serial.println("Set mode failure");
+  /* Verify accelerometer mode - optional */
+  if(accel.getMode() != level)      Serial.println("Set mode failure");
   /* Set axis offsets */
   /* Note: the offset is hardware specific
    * and defined thanks to the auto-calibration example. */
-  accel.setAxisOffset(2, 38, -27);
+  accel.setAxisOffset(0, 0, 0);
   /* Enable the detection on each axis */
   accel.enableDetectionXYZ(true, true, true);
   /* Set level polarity to positive (not free fall) */

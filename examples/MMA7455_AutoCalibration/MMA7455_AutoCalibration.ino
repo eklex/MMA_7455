@@ -1,52 +1,37 @@
-/*
- * Auto-Calibration for Freescale 3-axis Accelerometer MMA-7455.
- * 
- * 
-  Calibration step for Parallax MMA7455 3-axis accelerometer module (Parallax #28526).
-  
-  ------------
-
-  This sketch REQUIRES the use of a third-party library, MMA_7455. 
-   Refer to the 'MMA7455_Demo' sketch for important setup information
-   for this library.
-   
-   ------------
-  
-  Optional: Run this sketch first to obtain position offsets. Place the 
-  sensor on a flat surface so that all pins face down. Run this sketch 
-  and display the Arduino Serial Monitor window. Be sure communications
-  is set to 9600 baud.
-  
-  Note the average of the return X, Y, and Z values, including the - sign
-  character.
-  
-  The desired output should be as close as possible to 0, 0, 63.
-  This indicates 0g for the X and Y axes, and 1g for the Z axis.
-  
-  An EXAMPLE result might be 
-  
-  X: = -4   Y: = -14   Z: = 70
-  
-  Use YOUR values to calibrate the offset in the  MMA744_Demo sketch.
-  Look for the following line of code in the MMA744_Demo sketch:
-  
-  accel.calibrateOffset(0, 0, 0);
-  
-  and set the difference of YOUR values for the X, Y, Z parameters.
-  Using the previous example:
-  
-  accel.calibrateOffset(4, 14, -7);
-  
-  Remember: Use your own values to set the offset, not the ones
-  in the example.
-  
-  Note: It is normal for the sensor to report slight variations of one
-  or two points, even when it is not in motion.
-
-  If the autocalibration runs forever and does not find the offsets,
-  try to decrease lpratio.
-
-*/
+/**
+ *  Name:      MMA7455_AutoCalibration
+ *  Desc.:     Determine the natural offset of the accelerometer
+ *  Author:    Alexandre Boni
+ *  Created:   2015/09/16
+ *  Modified:  2015/09/26
+ *  Version:   0.1
+ *  IDE:       Arduino 1.6.5-r2
+ *  License:   GPLv2
+ *
+ *  Release:
+ *    0.1
+ *          Creation of this code
+ *
+ *  Notes:
+ *    Place the accelerometer a flat surface in order to
+ *    get 0g on the X and Y axis and 1g on the Z axis.
+ *    Run the auto-calibration code to get the natural
+ *    offset on each axis.
+ *    The accelerometer must stay still while the program
+ *    is running.
+ *    When the program stops, save the values for each axis.
+ *    These values belong to the function setAxisOffset(x,y,z).
+ *    For example, in sample code MMA7455_Demo, write your values
+ *    in setAxisOffset(x,y,z), and run the application. The output
+ *    should be close to X = 0, Y = 0, Z = 64.
+ *
+ *    It is expected for the sensor to report slight variations of one
+ *    or two points, even when the accelerometer is not in motion.
+ *
+ *    If the auto-calibration runs forever and does not find the offsets,
+ *    try to decrease the value of lpratio.
+ *
+ */
 
 #include <Wire.h>
 #include <MMA_7455.h>
@@ -60,20 +45,31 @@ float lpratio = 0.6; /* between 0 and 1 */
 
 void setup()
 {
+  /* Set serial baud rate */
   Serial.begin(9600);
+  /* Reset accelerometer registers */
+  accel.reset();
+  /* Set accelerometer sensibility to 2g */
   accel.setSensitivity(2);
+  /* Verify sensibility - optional */
   if(accel.getSensitivity() != 2)   Serial.println("Sensitivity failure");
+  /* Set accelerometer mode */
   accel.setMode(mesure);
+  /* Verify accelerometer mode - optional */
   if(accel.getMode() != mesure)     Serial.println("Set mode failure");
   /* Reset current axis offsets */
   accel.setAxisOffset(0, 0, 0);
 
-  Serial.print("MMA7455 Autocalibration -----\n");
+  Serial.print("MMA7455 Auto-calibration ----\n");
   Serial.print("-----------------------------\n");
   Serial.print("The calibration will look for\n");
   Serial.print("the following idle values:\n");
   Serial.print("X: 0\tY: 0\tZ: 64\n");
   Serial.print("-----------------------------\n");
+  Serial.print("Be patient,\n");
+  Serial.print("good things take time...\n");
+  Serial.print("-----------------------------\n");
+  delay(2000);
 }
 
 void loop()
@@ -104,6 +100,12 @@ void loop()
     Serial.print("X: ");   Serial.print(xc, DEC);
     Serial.print("\tY: "); Serial.print(yc, DEC);
     Serial.print("\tZ: "); Serial.println(zc, DEC);
+    Serial.print("-----------------------------\n");
+    Serial.print("Copy this function in\nyour programs:\n");
+    Serial.print("  setAxisOffset("); Serial.print(xc, DEC);
+    Serial.print(", "); Serial.print(yc, DEC);
+    Serial.print(", "); Serial.print(zc, DEC);
+    Serial.print(");\n");
     Serial.print("-----------------------------\n");
     Serial.print("DONE. -----------------------\n");
     while(1);

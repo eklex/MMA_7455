@@ -1,3 +1,32 @@
+/**
+ *  Name:      MMA7455_InterruptDoublePulse
+ *  Desc.:     Illustrate double pulse mode and interrupt use
+ *  Author:    Alexandre Boni
+ *  Created:   2015/09/16
+ *  Modified:  2015/09/26
+ *  Version:   0.1
+ *  IDE:       Arduino 1.6.5-r2
+ *  License:   GPLv2
+ *
+ *  Release:
+ *    0.1
+ *          Creation of this code
+ *
+ *  Notes:
+ *    First pulse: When one of the 3 axis goes
+ *    above 2g within 50ms, the interrupt 1 is triggered.
+ *    Second pulse: When the first pulse is followed by
+ *    a second pulse within 50ms after a dead time of 100ms,
+ *    the interrupt 2 is triggered.
+ *    To simplify, interrupt 1 is triggered by one tap,
+ *    while interrupt 2 is triggered by a double tap.
+ *
+ *    The code expects to have the axis offset
+ *    configured. To get the offset of your
+ *    accelerometer, run MMA7455_AutoCalibration.
+ *
+ */
+
 #include <Wire.h>
 #include <MMA_7455.h>
 
@@ -16,14 +45,16 @@ void setup()
   /* Set accelerometer sensibility */
   /* Note: Level and pulse detections run at 8g */
   accel.setSensitivity(8);
+  /* Verify sensibility - optional */
   if(accel.getSensitivity() != 8)   Serial.println("Sensitivity failure");
-  /* Set main mode */
+  /* Set accelerometer mode */
   accel.setMode(pulse);
-  if(accel.getMode() != pulse)     Serial.println("Set mode failure");
+  /* Verify accelerometer mode - optional */
+  if(accel.getMode() != pulse)      Serial.println("Set mode failure");
   /* Set axis offsets */
   /* Note: the offset is hardware specific
    * and defined thanks to the auto-calibration example. */
-  accel.setAxisOffset(2, 38, -27);
+  accel.setAxisOffset(0, 0, 0);
   /* Enable the detection on each axis */
   accel.enableDetectionXYZ(true, true, true);
   /* Set pulse polarity to positive */
@@ -31,7 +62,7 @@ void setup()
   /* Set threshold to absolute which means TH limit is positive */
   accel.setThresholdMode(th_absolute);
   /* Set threshold limit for level detection */
-  accel.setPulseThresholdLimit(25); /* 32 / 16N/g = 2g */
+  accel.setPulseThresholdLimit(32); /* 32 / 16N/g = 2g */
   /* Set max pulse duration for first pulse */
   accel.setPulseDuration(100); /* 100 * 0.5ms = 50ms */
   /* Set latency window between 2 pulses */
@@ -77,7 +108,7 @@ void loop()
   if(zpls)  Serial.print("\tZpls");
   
   Serial.println();
-  /* Note: if the delay is too low or inexistant,
+  /* Note: if the delay is too low or non-existent,
    * the system will reset the interrupt of the first pulse
    * and it will miss the second pulse. */
   delay(1000);
