@@ -11,6 +11,7 @@
 
 ## Limitations
 * The library does not support the SPI bus, so the MMA7455 has to be connected on the I2C bus.
+* The library relies on the standard Arduino library: Wire library.
 
 ## Hardware tested
 * Arduino Uno
