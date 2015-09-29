@@ -1,0 +1,7 @@
+{
+  "name": "mma-7455-sparkcore",
+  "author": "Alexandre Boni",
+  "license": "GPLv2",
+  "version": "0.1",
+  "description": "An Arduino Library for 3-Axis Accelerometer MMA7455 formatted for SparkCore format"
+}
