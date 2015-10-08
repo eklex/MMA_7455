@@ -21,12 +21,17 @@
  *  Name:      MMA_7455
  *  Author:    Alexandre Boni
  *  Created:   2015/09/16
- *  Modified:  2015/09/26
- *  Version:   0.1
+ *  Modified:  2015/10/05
+ *  Version:   0.2
  *  IDE:       Arduino 1.6.5-r2
+ *             ParticleDev 1.0.15
  *  License:   GPLv2
  *
  *  Release:
+ *    0.2
+ *          Adding SPI support and Particle Photon
+ *          compatibility.
+ *
  *    0.1
  *          Creation of this code from
  *          Moritz Kemper's MMA7455 library
@@ -42,11 +47,22 @@
 #ifndef __MMA_7455_H__
 #define __MMA_7455_H__
 
+#if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #include "Wire.h"
+#include "SPI.h"
 
-/* I2C address */
-#define MMA7455_ADDRESS         (0x1D)
+#elif defined(SPARK)
+#include "application.h"
+
+#endif
+
+/* I2C addresses */
+#define MMA7455_I2C_ADDR1       (0x1D)
+#define MMA7455_I2C_ADDR2       (0x1C)
+
+/* SPI operations */
+#define MMA7455_OPCODE_MASK     (0x01 << 6)
 
 /* 10bits Output X LBS */
 #define XOUTL_OFF               (0x00)
@@ -204,9 +220,9 @@
 typedef enum _MODE
 {
   standby = 0,
-  mesure = 1,
-  level = 2,
-  pulse = 3,
+  measure = 1,
+  level   = 2,
+  pulse   = 3,
   none
 } MODE;
 
@@ -221,7 +237,7 @@ typedef enum _LEVEL_MODE
 typedef enum _TH_MODE
 {
   th_absolute = 0,
-  th_signed = 1
+  th_signed   = 1
 } TH_MODE;
 
 /* Pulse mode */
@@ -239,12 +255,21 @@ typedef enum _ISR_MODE
   pulse_pulse = CTL1_INTRG_PSL_PSL
 } ISR_MODE;
 
+typedef enum _MMA7455_PROTOCOL
+{
+  i2c_protocol,
+  spi_protocol
+} MMA7455_PROTOCOL;
+
 class MMA_7455
 {
   public:
-    MMA_7455();
+    MMA_7455(MMA7455_PROTOCOL proto);
+    MMA_7455(MMA7455_PROTOCOL proto, uint8_t pin_addr);
     
-    void    reset(void);
+    void    begin(void);
+    void    setChipSelectPin(uint8_t pin);
+    
     void    setSensitivity(int sensitivity);
     int     getSensitivity(void);
     
@@ -289,7 +314,17 @@ class MMA_7455
     
     uint8_t readReg(uint8_t reg);
     void    writeReg(uint8_t reg, uint8_t val);
-    void    writeReg(uint8_t reg);
+  
+  private:
+    MMA7455_PROTOCOL _protocol;
+    uint8_t _i2c_address;
+    int8_t  _spi_cs_pin;
+    
+    uint8_t _readRegI2C(uint8_t reg);
+    uint8_t _readRegSPI(uint8_t reg);
+    void    _writeRegI2C(uint8_t reg, uint8_t val);
+    void    _writeRegSPI(uint8_t reg, uint8_t val);
+    
 };
 
 #endif /* __MMA_7455_H__ */

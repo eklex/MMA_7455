@@ -12,12 +12,14 @@ LEVEL_MODE				KEYWORD1
 TH_MODE					KEYWORD1
 PULSE_MODE				KEYWORD1
 ISR_MODE				KEYWORD1
+MMA7455_PROTOCOL		KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
 
-reset					KEYWORD2
+begin					KEYWORD2
+setChipSelectPin		KEYWORD2
 setSensitivity			KEYWORD2
 getSensitivity			KEYWORD2
 setMode					KEYWORD2

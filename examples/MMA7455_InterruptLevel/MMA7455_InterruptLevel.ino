@@ -3,12 +3,17 @@
  *  Desc.:     Illustrate level mode and interrupt use
  *  Author:    Alexandre Boni
  *  Created:   2015/09/16
- *  Modified:  2015/09/26
- *  Version:   0.1
+ *  Modified:  2015/10/07
+ *  Version:   0.2
  *  IDE:       Arduino 1.6.5-r2
+ *             ParticleDev 1.0.15
  *  License:   GPLv2
  *
  *  Release:
+ *    0.2
+ *          Add support for SPI.
+ *          Tested on Arduino Mini Pro 3.3v
+ *          and Particle Photon.
  *    0.1
  *          Creation of this code
  *
@@ -22,10 +27,18 @@
  *
  */
 
+#if defined(ARDUINO)
+/* Mandatory includes for Arduino */
+#include <SPI.h>
 #include <Wire.h>
+#endif
+
 #include <MMA_7455.h>
 
-MMA_7455 accel = MMA_7455();
+/* Case 1: Accelerometer on the I2C bus (most common) */
+MMA_7455 accel = MMA_7455(i2c_protocol);
+/* Case 2: Accelerometer on the SPI bus with CS on pin 2 */
+// MMA_7455 accel = MMA_7455(spi_protocol, A2);
 
 int8_t x8, y8, z8;
 bool int1;
@@ -35,8 +48,8 @@ void setup()
 {
   /* Set serial baud rate */
   Serial.begin(9600);
-  /* Reset accelerometer registers */
-  accel.reset();
+  /* Start accelerometer */
+  accel.begin();
   /* Set accelerometer sensibility */
   /* Note: Level and pulse detections run at 8g */
   accel.setSensitivity(8);

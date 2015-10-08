@@ -2,6 +2,7 @@
 > A serious MMA7455 arduino library
 
 ## Features
+* Support both I2C and SPI protocol
 * Get the 8-bit and 10-bit values of each axis
 * Get the value in 'g' for each axis
 * Support the standard measurement mode
@@ -10,12 +11,15 @@
 * Support the double pulse mode (with interrupts)
 
 ## Limitations
-* The library does not support the SPI bus, so the MMA7455 has to be connected on the I2C bus.
-* The library relies on the standard Arduino library: Wire library.
+* The library relies on the standard Arduino libraries: the Wire library (for I2C) and the SPI library.
+* Particle SparkCore has some performance issues with this library (and I don't know why), however the Particle Photon works wonderfully.
+* The SPI feature works only with a 3.3v logic level, this is an hardware limitation of the MMA7455.
 
 ## Hardware tested
-* Arduino Uno
-* Arduino Duemilanove
+* Arduino Uno (I2C only)
+* Arduino Duemilanove (I2C only)
+* Arduino Pro Mini 3.3v (I2C and SPI)
+* Particle Photon (I2C and SPI)
 * *Note: If your board is not mentioned in the list,
 it doesn't mean it won't work with yours, it just means I didn't try it
 because I don't have every Arduino board on planet Earth.*
@@ -33,7 +37,7 @@ because I don't have every Arduino board on planet Earth.*
 3. Place the renamed folder in arduino/libraries/
 4. Open the arduino IDE
 5. Open MMA7455_Demo sample code
-6. Upload it in your adruino board
+6. Upload it in your arduino board
 7. Open a serial console set at 9600 baud
 8. See the live value of the 3 axis
 

@@ -21,12 +21,17 @@
  *  Name:      MMA_7455
  *  Author:    Alexandre Boni
  *  Created:   2015/09/16
- *  Modified:  2015/09/26
- *  Version:   0.1
+ *  Modified:  2015/10/05
+ *  Version:   0.2
  *  IDE:       Arduino 1.6.5-r2
+ *             ParticleDev 1.0.15
  *  License:   GPLv2
  *
  *  Release:
+ *    0.2
+ *          Adding SPI support and Particle Photon
+ *          compatibility.
+ *
  *    0.1
  *          Creation of this code from
  *          Moritz Kemper's MMA7455 library
@@ -40,13 +45,63 @@
 
 #include "MMA_7455.h"
 
-MMA_7455::MMA_7455(void)
+MMA_7455::MMA_7455(MMA7455_PROTOCOL proto)
 {
-  Wire.begin();
+  if(proto == spi_protocol)
+  {
+    this->_protocol = spi_protocol;
+    this->_spi_cs_pin = -1;
+  }
+  else
+  {
+    this->_protocol = i2c_protocol;
+    this->_i2c_address = MMA7455_I2C_ADDR1;
+  }
 }
 
-void MMA_7455::reset(void)
+MMA_7455::MMA_7455(MMA7455_PROTOCOL proto, uint8_t pin_addr)
 {
+  if(proto == spi_protocol)
+  {
+    this->_protocol = spi_protocol;
+    this->_spi_cs_pin = pin_addr;
+  }
+  else
+  {
+    this->_protocol = i2c_protocol;
+    this->_i2c_address = pin_addr;
+  }
+}
+
+void MMA_7455::begin(void)
+{
+  if(this->_protocol == spi_protocol && _spi_cs_pin >= 0)
+  {
+    pinMode(this->_spi_cs_pin, OUTPUT);
+    digitalWrite(this->_spi_cs_pin, HIGH);
+  }
+  
+  if(this->_protocol == spi_protocol)
+  {
+    SPI.begin();
+    SPI.setBitOrder(MSBFIRST);
+    SPI.setClockDivider(SPI_CLOCK_DIV4);
+#if defined(ARDUINO)
+    /* the SPI mode 0 and 1 seems
+     * reversed in Arduino */
+    SPI.setDataMode(SPI_MODE0);
+#else
+    SPI.setDataMode(SPI_MODE1);
+#endif
+  }
+  else if(this->_protocol == i2c_protocol)
+  {
+#if defined(SPARK)
+    Wire.setSpeed(CLOCK_SPEED_400KHZ);
+#endif
+    Wire.begin();
+  }
+  
   this->writeReg(XOFFL_OFF,  0x00);
   this->writeReg(XOFFH_OFF,  0x00);
   this->writeReg(YOFFL_OFF,  0x00);
@@ -63,6 +118,18 @@ void MMA_7455::reset(void)
   this->writeReg(PW_OFF,     0x00);
   this->writeReg(LT_OFF,     0x00);
   this->writeReg(TW_OFF,     0x00);
+  
+  return;
+}
+
+void MMA_7455::setChipSelectPin(uint8_t pin)
+{
+  if(_protocol == spi_protocol)
+  {
+    _spi_cs_pin = pin;
+    pinMode(_spi_cs_pin, OUTPUT);
+    digitalWrite(_spi_cs_pin, HIGH);
+  }
   return;
 }
 
@@ -126,7 +193,7 @@ void MMA_7455::setMode(MODE mode)
     case standby:
       selected = MCTL_MOD_STBY;
       break;
-    case mesure:
+    case measure:
       selected = MCTL_MOD_MSMT;
       break;
     case level:
@@ -159,7 +226,7 @@ MODE MMA_7455::getMode(void)
       selected = standby;
       break;
     case MCTL_MOD_MSMT:
-      selected = mesure;
+      selected = measure;
       break;
     case MCTL_MOD_LVL:
       selected = level;
@@ -193,13 +260,13 @@ void MMA_7455::enableDetectionXYZ(bool x, bool y, bool z)
 {
   uint8_t val = this->readReg(CTL1_OFF);
   
-  /* enable/disbale detection on X */
+  /* enable/disable detection on X */
   if(x) val &= ~CTL1_XDA_DIS;
   else  val |= CTL1_XDA_DIS;
-  /* enable/disbale detection on Y */
+  /* enable/disable detection on Y */
   if(y) val &= ~CTL1_YDA_DIS;
   else  val |= CTL1_YDA_DIS;
-  /* enable/disbale detection on Z */
+  /* enable/disable detection on Z */
   if(z) val &= ~CTL1_ZDA_DIS;
   else  val |= CTL1_ZDA_DIS;
   
@@ -613,12 +680,20 @@ void MMA_7455::enableInterruptPins(bool enable)
 
 uint8_t MMA_7455::readReg(uint8_t reg)
 {
+  if(_protocol == spi_protocol)
+    return this->_readRegSPI(reg);
+  else
+    return this->_readRegI2C(reg);
+}
+
+uint8_t MMA_7455::_readRegI2C(uint8_t reg)
+{
   uint8_t buff = 0;
-  Wire.beginTransmission(MMA7455_ADDRESS);
+  Wire.beginTransmission(this->_i2c_address);
   Wire.write(reg);
   Wire.endTransmission();
-  Wire.beginTransmission(MMA7455_ADDRESS);
-  Wire.requestFrom(MMA7455_ADDRESS, 1);
+  Wire.beginTransmission(this->_i2c_address);
+  Wire.requestFrom(this->_i2c_address, (uint8_t)1);
   if(Wire.available())
   {
     buff = Wire.read();
@@ -627,19 +702,41 @@ uint8_t MMA_7455::readReg(uint8_t reg)
   return buff;
 }
 
+uint8_t MMA_7455::_readRegSPI(uint8_t reg)
+{
+  uint8_t buff = 0;
+  digitalWrite(this->_spi_cs_pin, LOW);
+  reg &= ~MMA7455_OPCODE_MASK;
+  reg <<= 1;
+  SPI.transfer(reg);
+  buff = SPI.transfer(0x00);
+  digitalWrite(this->_spi_cs_pin, HIGH);
+  return buff;
+}
+
 void MMA_7455::writeReg(uint8_t reg, uint8_t val)
 {
-  Wire.beginTransmission(MMA7455_ADDRESS);
+  if(_protocol == spi_protocol) this->_writeRegSPI(reg, val);
+  else                          this->_writeRegI2C(reg, val);
+  return;
+}
+
+void MMA_7455::_writeRegI2C(uint8_t reg, uint8_t val)
+{
+  Wire.beginTransmission(this->_i2c_address);
   Wire.write(reg);
   Wire.write(val);
   Wire.endTransmission();
   return;
 }
 
-void MMA_7455::writeReg(uint8_t reg)
+void MMA_7455::_writeRegSPI(uint8_t reg, uint8_t val)
 {
-  Wire.beginTransmission(MMA7455_ADDRESS);
-  Wire.write(reg);
-  Wire.endTransmission();
+  digitalWrite(this->_spi_cs_pin, LOW);
+  reg |= MMA7455_OPCODE_MASK;
+  reg <<= 1;
+  SPI.transfer(reg);
+  SPI.transfer(val);
+  digitalWrite(this->_spi_cs_pin, HIGH);
   return;
 }
