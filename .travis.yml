@@ -10,12 +10,17 @@ install:
 - pip install -U platformio
 
 env:
+# Board list at https://platformio.org/boards
 - BOARD=uno
 - BOARD=leonardo
 - BOARD=micro
 - BOARD=megaatmega2560
+- BOARD=diecimilaatmega328
+- BOARD=nanoatmega328
+- BOARD=miniatmega328
 - BOARD=due
 - BOARD=yun
+- BOARD=esp12e
 
 script:
 - set -eo pipefail;
